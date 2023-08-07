@@ -12,8 +12,9 @@
                     <strong>Created:</strong>{{ $note->created_at->diffForHumans() }}
                 </p>
                 <p class="opacity-70 ml-8">
-                    <strong>Created:</strong> {{ $note->created_at->diffForHumans() }}
+                    <strong>Updated:</strong> {{ $note->created_at->diffForHumans() }}
                 </p>
+                <a href="{{ route('notes.edit',$note) }}" class="btn-link ml-auto">Edit Note</a>
             </div>
             <div class=" mt-2 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -23,7 +24,7 @@
                     <p class="mt-2">
                         {{ $note->text }}
                     </p>
-                    
+
 
                 </div>
 
