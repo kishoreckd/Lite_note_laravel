@@ -17,15 +17,14 @@ class NoteController extends Controller
     public function index()
     {
         //getting values from Db
-        $notes=Note::where('user_id',Auth::id())->paginate(5);
+        // first method
+        $notes = Note::where('user_id', Auth::id())->latest('updated_at')->paginate(5);
+
+        /**Relation method on note.php and user.php
+         * */
+         $notes = Note::whereBelongsTo(Auth::user())->latest('updated_at')->paginate(5);
         //View
-        return view('layouts.notes.index')->with('notes',$notes);
-
-        //looping data from db
-        // $notes->each(function ($note){
-        //     // dump($note->title);
-        // });
-
+        return view('layouts.notes.index')->with('notes', $notes);
     }
 
     /**
@@ -45,8 +44,8 @@ class NoteController extends Controller
         //checkong request
         // dd($request);
         $request->validate([
-            'title'=>'required|max:120',
-            'text'=>'required'
+            'title' => 'required|max:120',
+            'text' => 'required'
         ]);
 
         // dd(Auth::id());
@@ -61,16 +60,25 @@ class NoteController extends Controller
 
         // $note->save();
 
-        Note::create([
-            'uuid'=>Str::uuid(),
-            'user_id'=>Auth::id(),
-            'title'=>$request->title,
-            'text'=>$request->text
+
+        /**New Method */
+        // Note::create([
+        //     'uuid' => Str::uuid(),
+        //     'user_id' => Auth::id(),
+        //     'title' => $request->title,
+        //     'text' => $request->text
+
+        // ]);
+
+        /**It creates using Auth method */
+
+        Auth::user()->notes()->create([
+            'uuid' => Str::uuid(),
+            'title' => $request->title,
+            'text' => $request->text
 
         ]);
         return to_route('notes.index');
-
-
     }
 
     /**
@@ -78,12 +86,21 @@ class NoteController extends Controller
      */
     public function show(Note $note)
     {
-        if ($note->user_id != Auth::id()) {
-            # code...
+        // Method 1
+        // if ($note->user_id != Auth::id()) {
+        //     # code...
+        //     return abort(403);
+        // }
+
+
+
+        /**Relation method on note.php and user.php
+         * */
+        if (!$note->user->is(Auth::user())) {
             return abort(403);
         }
-        //
-        return view('layouts.notes.show')->with('note',$note);
+
+        return view('layouts.notes.show')->with('note', $note);
     }
 
     /**
@@ -92,32 +109,53 @@ class NoteController extends Controller
     public function edit(Note $note)
     {
 
-        if ($note->user_id != Auth::id()) {
+        // Method 1
+        // if ($note->user_id != Auth::id()) {
+        //     # code...
+        //     return abort(403);
+        // }
+
+
+
+        /**Relation method on note.php and user.php
+         * */
+        if (!$note->user->is(Auth::user())) {
             return abort(403);
         }
         //
-        return view('layouts.notes.edit')->with('note',$note);    }
+        return view('layouts.notes.edit')->with('note', $note);
+    }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Note $note)
     {
-        if ($note->user_id != Auth::id()) {
+       // Method 1
+        // if ($note->user_id != Auth::id()) {
+        //     # code...
+        //     return abort(403);
+        // }
+
+
+
+        /**Relation method on note.php and user.php
+         * */
+        if (!$note->user->is(Auth::user())) {
             return abort(403);
         }
 
         $request->validate([
-            'title'=>'required|max:120',
-            'text'=>'required'
+            'title' => 'required|max:120',
+            'text' => 'required'
         ]);
 
         $note->update([
-            'title'=>$request->title,
-            'text'=>$request->text,
+            'title' => $request->title,
+            'text' => $request->text,
 
         ]);
-        return view('layouts.notes.show')->with('note',$note);
+        return to_route('notes.show', $note)->with('success', 'Note updated Success fully');
 
         //
     }
@@ -125,8 +163,25 @@ class NoteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Note $note)
     {
+         // Method 1
+        // if ($note->user_id != Auth::id()) {
+        //     # code...
+        //     return abort(403);
+        // }
+
+
+
+        /**Relation method on note.php and user.php
+         * */
+        if (!$note->user->is(Auth::user())) {
+            return abort(403);
+        }
+
+        $note->delete();
+
+        return to_route('notes.index')->with('Success', 'Note Moved to Trash');
         //
     }
 }
